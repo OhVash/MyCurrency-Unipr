@@ -30,7 +30,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private Spinner spinnerFrom;
     private Spinner spinnerTo;
-    //private Spinner spinnerDays;
 
     private EditText editTextAmount;
 
