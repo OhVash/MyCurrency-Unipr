@@ -112,42 +112,42 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-/*
- * getCurrencies is to get the name of the currencies from the API
- */
-private List<String> getCurrencies() {
-    List<String> currencies = new ArrayList<>();
-    String apiKey = "34dTPuf6QD2PLFPEsxOmHe9QOzVEEjYCd5FKFdlo";
-    String url = "https://api.freecurrencyapi.com/v1/latest?apikey=" + apiKey;
-
-    OkHttpClient client = new OkHttpClient();
-    Request request = new Request.Builder()
-            .url(url)
-            .build();
-
-    try {
-        Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            Log.e("FetchCurrenciesTask", "Error! " + response.code());
-            return currencies;
-        }
-
-        JSONObject jsonResponse = new JSONObject(response.body().string());
-        JSONObject jsonObjectCurrencies = jsonResponse.getJSONObject("data");
-
-        Iterator<String> currencyIterator = jsonObjectCurrencies.keys();
-        while (currencyIterator.hasNext()) {
-            String currency = currencyIterator.next();
-            currencies.add(currency);
-        }
-    } catch (IOException | JSONException e) {
-        e.printStackTrace();
-    }
-    return currencies;
-}
     /*
- * populate spinner is to put the data from the api into the spinners
- */
+     * getCurrencies is to get the name of the currencies from the API
+     */
+    private List<String> getCurrencies() {
+        List<String> currencies = new ArrayList<>();
+        String apiKey = "34dTPuf6QD2PLFPEsxOmHe9QOzVEEjYCd5FKFdlo";
+        String url = "https://api.freecurrencyapi.com/v1/latest?apikey=" + apiKey;
+
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                Log.e("FetchCurrenciesTask", "Error! " + response.code());
+                return currencies;
+            }
+
+            JSONObject jsonResponse = new JSONObject(response.body().string());
+            JSONObject jsonObjectCurrencies = jsonResponse.getJSONObject("data");
+
+            Iterator<String> currencyIterator = jsonObjectCurrencies.keys();
+            while (currencyIterator.hasNext()) {
+                String currency = currencyIterator.next();
+                currencies.add(currency);
+            }
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+        return currencies;
+    }
+    /*
+     * populate spinner is to put the data from the api into the spinners
+     */
     private void populateSpinners(List<String> currencies){
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,currencies);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -155,35 +155,35 @@ private List<String> getCurrencies() {
         spinnerTo.setAdapter(adapter);
     }
 
-/*
- * getExchangeRate is used to get the requested exchange rate based on the selected currencies
- */
-private double getExchangeRate(String fromCurrency, String toCurrency) throws IOException, JSONException {
-    String apiKey = "34dTPuf6QD2PLFPEsxOmHe9QOzVEEjYCd5FKFdlo";
-    String url = "https://api.freecurrencyapi.com/v1/latest?apikey="
-            + apiKey + "&currencies="
-            + toCurrency + "&base_currency="
-            + fromCurrency;
+    /*
+     * getExchangeRate is used to get the requested exchange rate based on the selected currencies
+     */
+    private double getExchangeRate(String fromCurrency, String toCurrency) throws IOException, JSONException {
+        String apiKey = "34dTPuf6QD2PLFPEsxOmHe9QOzVEEjYCd5FKFdlo";
+        String url = "https://api.freecurrencyapi.com/v1/latest?apikey="
+                + apiKey + "&currencies="
+                + toCurrency + "&base_currency="
+                + fromCurrency;
 
-    HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-    connection.setRequestMethod("GET");
-    int responseCode = connection.getResponseCode();
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setRequestMethod("GET");
+        int responseCode = connection.getResponseCode();
 
-    if (responseCode == HttpURLConnection.HTTP_OK) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
+
+            JSONObject jsonResponse = new JSONObject(response.toString());
+            return jsonResponse.getJSONObject("data").getDouble(toCurrency);
+        } else {
+            throw new IOException("Error! " + responseCode);
         }
-        reader.close();
-
-        JSONObject jsonResponse = new JSONObject(response.toString());
-        return jsonResponse.getJSONObject("data").getDouble(toCurrency);
-    } else {
-        throw new IOException("Error! " + responseCode);
     }
-}
 
     private String buildHistoryText(List<Double> exchangeRates) {
         StringBuilder historyText = new StringBuilder();
@@ -250,27 +250,19 @@ private double getExchangeRate(String fromCurrency, String toCurrency) throws IO
         return exchangeRates;
     }
     /*
-    * performConversion uses the chosen amount of money and convert it into the selected currency and
-    * shows it into the editText
-    */
+     * performConversion uses the chosen amount of money and convert it into the selected currency and
+     * shows it into the editText
+     */
     private void performConversion() {
         String fromCurrency = spinnerFrom.getSelectedItem().toString();
         String toCurrency = spinnerTo.getSelectedItem().toString();
 
         String amountStr = editTextAmount.getText().toString();
 
-        // Controlla se l'input dell'ammontare è vuoto o non valido
+        //Checkinput
         if (amountStr.isEmpty()) {
             Toast.makeText(this, "Inserisci una quantità valida.", Toast.LENGTH_SHORT).show();
-            return; // Esci dal metodo se l'input non è valido
-        }
-
-        double checkAmount;
-        try {
-            checkAmount = Double.parseDouble(amountStr);
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, "Inserisci una quantità valida.", Toast.LENGTH_SHORT).show();
-            return; // Esci dal metodo se l'input non è valido
+            return;
         }
         Executor executor = Executors.newSingleThreadExecutor();
 
@@ -283,6 +275,7 @@ private double getExchangeRate(String fromCurrency, String toCurrency) throws IO
                 throw new RuntimeException(e);
             }
         }, executor);
+        
         CompletableFuture<List<Double>> exchangeRateHistoryFuture = CompletableFuture.supplyAsync(() -> getExchangeRateHistory(fromCurrency, toCurrency), executor);
 
         CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(exchangeRateFuture, exchangeRateHistoryFuture);
