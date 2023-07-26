@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private Button buttonCalculate;
 
     private ImageView imageViewSaved;
-    private ImageView imageViewAdd
+    private ImageView imageViewAdd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
