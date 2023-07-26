@@ -118,27 +118,16 @@
         android:textColor="#000000"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spinnerDays" />
-
-    <Spinner
-        android:id="@+id/spinnerDays"
-        android:layout_width="160dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:layout_marginEnd="40dp"
-        android:backgroundTint="#130000"
-        android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewAdd" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewCurrencies" />
 
     <TextView
         android:id="@+id/textViewCurrencies"
         android:layout_width="160dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="44dp"
         android:layout_marginTop="50dp"
         android:textColor="#000000"
         android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageViewAdd" />
 

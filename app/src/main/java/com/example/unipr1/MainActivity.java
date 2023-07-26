@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Spinner spinnerFrom;
     private Spinner spinnerTo;
-    private Spinner spinnerDays;
+    //private Spinner spinnerDays;
 
     private EditText editTextAmount;
 
@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
         spinnerFrom = findViewById(R.id.spinnerFrom);
         spinnerTo = findViewById(R.id.spinnerTo);
-        spinnerDays = findViewById(R.id.spinnerDays);
+        // spinnerDays = findViewById(R.id.spinnerDays);
 
         editTextAmount = findViewById(R.id.editTextAmount);
 
@@ -75,17 +75,6 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(() -> populateSpinners(currencies));
         }).start();
 
-        // Creazione dell'array di stringhe per i giorni
-        String[] daysArray = {"Today", "Yesterday", "2 days ago", "3 days ago", "4 days ago", "5 days ago", "6 days ago", "1 week ago"};
-
-        // Creazione di un ArrayAdapter per collegare l'array allo spinner
-        ArrayAdapter<String> daysAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, daysArray);
-
-        // Specifica il layout per gli elementi della lista
-        daysAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        // Collega l'ArrayAdapter allo spinner "spinnerDays"
-        spinnerDays.setAdapter(daysAdapter);
 
         buttonCalculate.setOnClickListener(v -> performConversion());
 
@@ -122,18 +111,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        spinnerDays.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedDay = parent.getItemAtPosition(position).toString();
-                //getHistoricalExchangeRate(selectedDay);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // Niente da fare quando non viene selezionato nulla
-            }
-        });
 
 
 
@@ -162,55 +139,6 @@ private double getExchangeRate(String fromCurrency, String toCurrency) throws IO
         throw new IOException("Error! " + responseCode);
     }
 }
-
-    private List<Double> getExchangeRateHistory(String fromCurrency, String toCurrency) throws IOException, JSONException {
-        String apiKey = "34dTPuf6QD2PLFPEsxOmHe9QOzVEEjYCd5FKFdlo";
-
-        // Calculate the dates for the 7-day interval (from 7 days ago to today)
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        calendar.add(Calendar.DAY_OF_YEAR, -1);
-        String toDate = dateFormat.format(calendar.getTime());
-        calendar.add(Calendar.DAY_OF_YEAR, -6);
-        String fromDate = dateFormat.format(calendar.getTime());
-
-        String url = "https://api.freecurrencyapi.com/v1/historical?apikey=" + apiKey
-                + "&currencies=" + toCurrency
-                + "&base_currency=" + fromCurrency
-                + "&date_from=" + fromDate
-                + "&date_to=" + toDate;
-
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        connection.setRequestMethod("GET");
-        int responseCode = connection.getResponseCode();
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            reader.close();
-
-            JSONObject jsonResponse = new JSONObject(response.toString());
-            JSONObject dataObject = jsonResponse.getJSONObject("data");
-
-            List<Double> exchangeRates = new ArrayList<>();
-            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            for (int i = 0; i < 7; i++) {
-                calendar.add(Calendar.DAY_OF_YEAR, -1);
-                String date = dateFormatter.format(calendar.getTime());
-                JSONObject dateObject = dataObject.getJSONObject(date);
-                double exchangeRate = dateObject.getDouble(toCurrency);
-                exchangeRates.add(exchangeRate);
-            }
-            Collections.reverse(exchangeRates); // Invert the order to get the exchange rates in chronological order
-            return exchangeRates;
-        } else {
-            throw new IOException("Error! " + responseCode);
-        }
-    }
-
 
     private List<String> getCurrencies() {
         List<String> currencies = new ArrayList<>();
@@ -275,24 +203,6 @@ private double getExchangeRate(String fromCurrency, String toCurrency) throws IO
                     double convertedAmount = amount * exchangeRate;
                     textViewResult.setText(String.format("%.2f", convertedAmount));
                 });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-
-        executor.execute(() -> {
-            try {
-                List<Double> exchangeRates = getExchangeRateHistory(fromCurrency, toCurrency);
-                StringBuilder historyText = new StringBuilder();
-                SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                Calendar calendar = Calendar.getInstance();
-                for (int i = 0; i < exchangeRates.size(); i++) {
-                    calendar.add(Calendar.DAY_OF_YEAR, -1);
-                    String date = dateFormatter.format(calendar.getTime());
-                    double rate = exchangeRates.get(i);
-                    historyText.append(date).append(": ").append(String.format("%.2f", rate)).append("\n");
-                }
-                runOnUiThread(() -> textViewChange.setText(historyText.toString()));
             } catch (Exception e) {
                 e.printStackTrace();
             }
