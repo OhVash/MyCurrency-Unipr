@@ -24,11 +24,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".FavoriteConversionsActivity"
-            android:exported="true"
-            android:label="Favorite Conversions">
-        </activity>
-
     </application>
 
 </manifest>
