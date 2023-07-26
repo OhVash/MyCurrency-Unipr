@@ -12,27 +12,28 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.TimeZone;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -144,7 +145,6 @@ private List<String> getCurrencies() {
     }
     return currencies;
 }
-
     /*
  * populate spinner is to put the data from the api into the spinners
  */
@@ -257,6 +257,21 @@ private double getExchangeRate(String fromCurrency, String toCurrency) throws IO
         String fromCurrency = spinnerFrom.getSelectedItem().toString();
         String toCurrency = spinnerTo.getSelectedItem().toString();
 
+        String amountStr = editTextAmount.getText().toString();
+
+        // Controlla se l'input dell'ammontare è vuoto o non valido
+        if (amountStr.isEmpty()) {
+            Toast.makeText(this, "Inserisci una quantità valida.", Toast.LENGTH_SHORT).show();
+            return; // Esci dal metodo se l'input non è valido
+        }
+
+        double checkAmount;
+        try {
+            checkAmount = Double.parseDouble(amountStr);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Inserisci una quantità valida.", Toast.LENGTH_SHORT).show();
+            return; // Esci dal metodo se l'input non è valido
+        }
         Executor executor = Executors.newSingleThreadExecutor();
 
         CompletableFuture<Double> exchangeRateFuture = CompletableFuture.supplyAsync(() -> {
