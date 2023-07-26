@@ -12,10 +12,17 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.BufferedReader;
@@ -27,6 +34,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 public class MainActivity extends AppCompatActivity {
     private Spinner spinnerFrom;
     private Spinner spinnerTo;
@@ -35,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView textViewResult;
     private TextView textViewCurrencies;
-    private TextView textViewChange;
+    private TextView textViewHistory;
 
     private Button buttonCalculate;
 
@@ -54,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
         textViewResult = findViewById(R.id.textViewResult);
         textViewCurrencies = findViewById(R.id.textViewCurrencies);
-        textViewChange = findViewById(R.id.textViewChange);
+        textViewHistory = findViewById(R.id.textViewHistory);
 
         buttonCalculate = findViewById(R.id.buttonCalculate);
 
@@ -100,47 +111,41 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
 /*
  * getCurrencies is to get the name of the currencies from the API
  */
-    private List<String> getCurrencies() {
-        List<String> currencies = new ArrayList<>();
-        String apiKey = "34dTPuf6QD2PLFPEsxOmHe9QOzVEEjYCd5FKFdlo";
-        String url = "https://api.freecurrencyapi.com/v1/latest?apikey=" + apiKey;
+private List<String> getCurrencies() {
+    List<String> currencies = new ArrayList<>();
+    String apiKey = "34dTPuf6QD2PLFPEsxOmHe9QOzVEEjYCd5FKFdlo";
+    String url = "https://api.freecurrencyapi.com/v1/latest?apikey=" + apiKey;
 
-        try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setRequestMethod("GET");
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                reader.close();
+    OkHttpClient client = new OkHttpClient();
+    Request request = new Request.Builder()
+            .url(url)
+            .build();
 
-                JSONObject jsonResponse = new JSONObject(response.toString());
-                JSONObject jsonObjectCurrencies = jsonResponse.getJSONObject("data");
-
-                Iterator<String> currencyIterator = jsonObjectCurrencies.keys();
-                while (currencyIterator.hasNext()) {
-                    String currency = currencyIterator.next();
-                    currencies.add(currency);
-                }
-                return currencies;
-            } else {
-                Log.e("FetchCurrenciesTask", "Error! " + responseCode);
-            }
-            connection.disconnect();
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
+    try {
+        Response response = client.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            Log.e("FetchCurrenciesTask", "Error! " + response.code());
+            return currencies;
         }
-        return currencies;
+
+        JSONObject jsonResponse = new JSONObject(response.body().string());
+        JSONObject jsonObjectCurrencies = jsonResponse.getJSONObject("data");
+
+        Iterator<String> currencyIterator = jsonObjectCurrencies.keys();
+        while (currencyIterator.hasNext()) {
+            String currency = currencyIterator.next();
+            currencies.add(currency);
+        }
+    } catch (IOException | JSONException e) {
+        e.printStackTrace();
     }
-/*
+    return currencies;
+}
+
+    /*
  * populate spinner is to put the data from the api into the spinners
  */
     private void populateSpinners(List<String> currencies){
@@ -153,10 +158,12 @@ public class MainActivity extends AppCompatActivity {
 /*
  * getExchangeRate is used to get the requested exchange rate based on the selected currencies
  */
-    private double getExchangeRate(String fromCurrency, String toCurrency) throws IOException, JSONException {
+private double getExchangeRate(String fromCurrency, String toCurrency) throws IOException, JSONException {
     String apiKey = "34dTPuf6QD2PLFPEsxOmHe9QOzVEEjYCd5FKFdlo";
     String url = "https://api.freecurrencyapi.com/v1/latest?apikey="
-                    + apiKey + "&currencies=" + toCurrency + "&base_currency=" + fromCurrency;
+            + apiKey + "&currencies="
+            + toCurrency + "&base_currency="
+            + fromCurrency;
 
     HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
     connection.setRequestMethod("GET");
@@ -172,35 +179,116 @@ public class MainActivity extends AppCompatActivity {
         reader.close();
 
         JSONObject jsonResponse = new JSONObject(response.toString());
-        double exchangeRate = jsonResponse.getJSONObject("data").getDouble(toCurrency);
-        return exchangeRate;
+        return jsonResponse.getJSONObject("data").getDouble(toCurrency);
     } else {
         throw new IOException("Error! " + responseCode);
     }
 }
-/*
- * performConversion uses the chosen amount of money and convert it into the selected currency and
- * shows it into the editText
- */
-    @SuppressLint("DefaultLocale")
+
+    private String buildHistoryText(List<Double> exchangeRates) {
+        StringBuilder historyText = new StringBuilder();
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Calendar calendar = Calendar.getInstance();
+        for (int i = 0; i < exchangeRates.size(); i++) {
+            calendar.add(Calendar.DAY_OF_YEAR, -1);
+            String date = dateFormatter.format(calendar.getTime());
+            double rate = exchangeRates.get(i);
+            historyText.append(date).append(": ").append(String.format("%.10f", rate)).append("\n");
+        }
+        return historyText.toString();
+    }
+
+    private List<Double> getExchangeRateHistory(String fromCurrency, String toCurrency) {
+        List<Double> exchangeRates = new ArrayList<>();
+
+        String apiKey = "34dTPuf6QD2PLFPEsxOmHe9QOzVEEjYCd5FKFdlo";
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+        // Get the current date in UTC timezone
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        String toDate = dateFormat.format(calendar.getTime());
+
+        // Go back 7 days from the current date
+        calendar.add(Calendar.DAY_OF_YEAR, -7);
+        String fromDate = dateFormat.format(calendar.getTime());
+        String url = "https://api.freecurrencyapi.com/v1/historical?apikey=" + apiKey
+                + "&currencies=" + toCurrency
+                + "&base_currency=" +fromCurrency
+                + "&date_from=" + fromDate
+                + "&date_to=" + toDate;
+        Log.d(url , url);
+
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                Log.e("FetchExchangeRateHistory", "Error! " + response.code());
+                return exchangeRates;
+            }
+
+            JSONObject jsonResponse = new JSONObject(response.body().string());
+            JSONObject dataObject = jsonResponse.getJSONObject("data");
+
+            for (int i = 0; i < 7; i++) {
+                calendar.setTime(dateFormat.parse(fromDate));
+                calendar.add(Calendar.DAY_OF_YEAR, i);
+                String date = dateFormat.format(calendar.getTime());
+                JSONObject dateObject = dataObject.getJSONObject(date);
+                double exchangeRate = dateObject.getDouble(toCurrency);
+                exchangeRates.add(exchangeRate);
+            }
+            Collections.reverse(exchangeRates); // Invert the order to get rates in chronological order
+        } catch (IOException | JSONException | ParseException e) {
+            e.printStackTrace();
+        }
+
+        return exchangeRates;
+    }
+    /*
+    * performConversion uses the chosen amount of money and convert it into the selected currency and
+    * shows it into the editText
+    */
     private void performConversion() {
         String fromCurrency = spinnerFrom.getSelectedItem().toString();
         String toCurrency = spinnerTo.getSelectedItem().toString();
 
         Executor executor = Executors.newSingleThreadExecutor();
-        Future<Double> exchangeRateFuture = ((ExecutorService) executor).submit(() -> getExchangeRate(fromCurrency, toCurrency));
 
-        executor.execute(() -> {
+        CompletableFuture<Double> exchangeRateFuture = CompletableFuture.supplyAsync(() -> {
+            try {
+                return getExchangeRate(fromCurrency, toCurrency);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }, executor);
+        CompletableFuture<List<Double>> exchangeRateHistoryFuture = CompletableFuture.supplyAsync(() -> getExchangeRateHistory(fromCurrency, toCurrency), executor);
+
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(exchangeRateFuture, exchangeRateHistoryFuture);
+
+        combinedFuture.thenRunAsync(() -> {
             try {
                 double exchangeRate = exchangeRateFuture.get();
+                List<Double> exchangeRateHistory = exchangeRateHistoryFuture.get();
+
                 runOnUiThread(() -> {
                     double amount = Double.parseDouble(editTextAmount.getText().toString());
                     double convertedAmount = amount * exchangeRate;
                     textViewResult.setText(String.format("%.2f", convertedAmount));
+
+                    String historyText = buildHistoryText(exchangeRateHistory);
+                    textViewHistory.setText(historyText);
                 });
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
     }
+
 }
