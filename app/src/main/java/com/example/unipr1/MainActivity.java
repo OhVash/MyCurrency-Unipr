@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView imageViewSaved;
     private ImageView imageViewAdd;
     private CurrencyAPIManager currencyAPIManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
