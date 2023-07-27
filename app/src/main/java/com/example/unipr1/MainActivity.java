@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
         imageViewSaved.setOnClickListener(view -> {
             // Log.d("ciao", "hai cliccato");
-            Intent intent = new Intent(MainActivity.this, FavoritesManager.class);
+            Intent intent = new Intent(MainActivity.this, FavoritesActivity.class);
             startActivity(intent);
         });
     }

@@ -24,11 +24,9 @@ import java.util.Locale;
 
 public class CurrencyAPIManager {
     private OkHttpClient client;
-
     public CurrencyAPIManager() {
         client = new OkHttpClient();
     }
-
     public List<String> getCurrencies() {
         List<String> currencies = new ArrayList<>();
         String apiKey = "34dTPuf6QD2PLFPEsxOmHe9QOzVEEjYCd5FKFdlo";

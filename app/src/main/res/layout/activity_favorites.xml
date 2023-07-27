@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".FavoritesActivity">
 
     <ImageView
         android:id="@+id/imageView"
@@ -24,7 +25,7 @@
         android:text="by OhVash"
         android:textColor="#000000"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.559"
+        app:layout_constraintHorizontal_bias="0.516"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewTitle2" />
 
@@ -42,22 +43,21 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ListView
-        android:id="@+id/ListViewSaved"
-        android:layout_width="417dp"
-        android:layout_height="617dp"
-        android:layout_marginTop="32dp"
+        android:layout_width="408dp"
+        android:layout_height="606dp"
+        android:layout_marginTop="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewAuthor2" />
 
     <ImageView
         android:id="@+id/imageViewHome"
-        android:layout_width="61dp"
-        android:layout_height="43dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="12dp"
+        android:layout_width="64dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="?attr/homeAsUpIndicator" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>
