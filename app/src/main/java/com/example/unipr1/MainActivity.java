@@ -2,6 +2,7 @@ package com.example.unipr1;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -22,8 +23,6 @@ import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
-
 public class MainActivity extends AppCompatActivity {
     private Spinner spinnerFrom;
     private Spinner spinnerTo;
@@ -57,23 +56,17 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(() -> populateSpinners(currencies));
         }).start();
 
-        //Thread to get currencies from API
-        new Thread(() -> {
-            List<String> currencies = currencyAPIManager.getCurrencies();
-            runOnUiThread(() -> populateSpinners(currencies));
-        }).start();
-
         //when pressed perform conversion
         buttonCalculate.setOnClickListener(v -> performConversion());
 
         //listener per "spinnerFrom"
         spinnerFrom.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @SuppressLint("SetTextI18n")
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String fromCurrency = spinnerFrom.getSelectedItem().toString();
                 String toCurrency = spinnerTo.getSelectedItem().toString();
-                textViewCurrencies.setText(fromCurrency + "/" + toCurrency);
+                String showCurrencies = fromCurrency + "/" + toCurrency;
+                textViewCurrencies.setText(showCurrencies);
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
@@ -95,8 +88,13 @@ public class MainActivity extends AppCompatActivity {
                 //Do nothing if nothing pressed
             }
         });
-    }
 
+        imageViewSaved.setOnClickListener(view -> {
+            // Log.d("ciao", "hai cliccato");
+            Intent intent = new Intent(MainActivity.this, FavoritesManager.class);
+            startActivity(intent);
+        });
+    }
     /*
      * populate spinner is to put the data from the api into the spinners
      */
@@ -107,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
         spinnerTo.setAdapter(adapter);
     }
 
+    @SuppressLint("DefaultLocale")
     private String buildHistoryText(List<Double> exchangeRates) {
         StringBuilder historyText = new StringBuilder();
         SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -119,11 +118,11 @@ public class MainActivity extends AppCompatActivity {
         }
         return historyText.toString();
     }
-
     /*
      * performConversion uses the chosen amount of money and convert it into the selected currency and
      * shows it into the editText
      */
+    @SuppressLint("DefaultLocale")
     private void performConversion() {
         String fromCurrency = spinnerFrom.getSelectedItem().toString();
         String toCurrency = spinnerTo.getSelectedItem().toString();
@@ -140,9 +139,7 @@ public class MainActivity extends AppCompatActivity {
         CompletableFuture<Double> exchangeRateFuture = CompletableFuture.supplyAsync(() -> {
             try {
                 return currencyAPIManager.getExchangeRate(fromCurrency, toCurrency);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (JSONException e) {
+            } catch (IOException | JSONException e) {
                 throw new RuntimeException(e);
             }
         }, executor);
@@ -169,5 +166,4 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
 }

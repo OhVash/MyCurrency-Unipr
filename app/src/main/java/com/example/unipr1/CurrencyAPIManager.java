@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
 public class CurrencyAPIManager {
     private OkHttpClient client;
@@ -34,19 +33,16 @@ public class CurrencyAPIManager {
         List<String> currencies = new ArrayList<>();
         String apiKey = "34dTPuf6QD2PLFPEsxOmHe9QOzVEEjYCd5FKFdlo";
         String url = "https://api.freecurrencyapi.com/v1/latest?apikey=" + apiKey;
-
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url(url)
                 .build();
-
         try {
             Response response = client.newCall(request).execute();
             if (!response.isSuccessful()) {
                 Log.e("FetchCurrenciesTask", "Error! " + response.code());
                 return currencies;
             }
-
             JSONObject jsonResponse = new JSONObject(response.body().string());
             JSONObject jsonObjectCurrencies = jsonResponse.getJSONObject("data");
 
@@ -67,7 +63,6 @@ public class CurrencyAPIManager {
                 + apiKey + "&currencies="
                 + toCurrency + "&base_currency="
                 + fromCurrency;
-
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setRequestMethod("GET");
         int responseCode = connection.getResponseCode();
@@ -80,7 +75,6 @@ public class CurrencyAPIManager {
                 response.append(line);
             }
             reader.close();
-
             JSONObject jsonResponse = new JSONObject(response.toString());
             return jsonResponse.getJSONObject("data").getDouble(toCurrency);
         } else {
@@ -95,7 +89,7 @@ public class CurrencyAPIManager {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
         // Get the current date in UTC timezone
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_YEAR, -1);
         String toDate = dateFormat.format(calendar.getTime());
 
