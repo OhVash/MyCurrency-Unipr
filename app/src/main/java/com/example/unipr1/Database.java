@@ -63,4 +63,25 @@ public class Database extends SQLiteOpenHelper {
         db.close();
     }
 
+    public void updateCurrencyPairs(ArrayList<String> currencyPairsList) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Elimina la tabella esistente dei preferiti
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+
+        // Ricrea la tabella dei preferiti
+        String createTableQuery = "CREATE TABLE " + TABLE_NAME + " (" +
+                COLUMN_CURRENCY_PAIR + " TEXT PRIMARY KEY)";
+        db.execSQL(createTableQuery);
+
+        // Inserisci le nuove valute nella tabella
+        for (String currencyPair : currencyPairsList) {
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_CURRENCY_PAIR, currencyPair);
+            db.insert(TABLE_NAME, null, values);
+        }
+
+        db.close();
+    }
+
 }

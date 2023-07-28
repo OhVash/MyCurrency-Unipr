@@ -1,19 +1,21 @@
 package com.example.unipr1;
 
-import androidx.annotation.NonNull;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.ItemTouchHelper;
+
 
 import android.content.Intent;
-import android.content.SharedPreferences;
+
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+
 
 public class FavoritesActivity extends AppCompatActivity {
     private ImageView imageViewHome;
@@ -48,5 +50,29 @@ public class FavoritesActivity extends AppCompatActivity {
             finish();
         });
 
+
+        listViewFavorites.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                // Mostra una conferma di eliminazione (puoi utilizzare un AlertDialog)
+                showDeleteConfirmation(position);
+                return true; // Restituisci true per indicare che l'evento è stato gestito
+            }
+        });
+
+    }
+
+    private void showDeleteConfirmation(int position) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Vuoi eliminare questa valuta dai preferiti?")
+                .setPositiveButton("Elimina", (dialog, which) -> {
+                    // Ottieni l'elemento selezionato dalla lista e rimuovilo dalla lista dei preferiti
+                    String currencyPair = favoritesManager.getAdapter().getItem(position);
+                    if (currencyPair != null) {
+                        favoritesManager.removeCurrencyPair(currencyPair);
+                    }
+                })
+                .setNegativeButton("Annulla", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 }

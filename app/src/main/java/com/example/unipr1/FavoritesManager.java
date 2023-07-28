@@ -23,6 +23,24 @@ public class FavoritesManager {
         return adapter;
     }
 
+    public void addCurrencyPair(String currencyPair) {
+        if (!favoriteCurrenciesList.contains(currencyPair)) {
+            favoriteCurrenciesList.add(currencyPair);
+            adapter.notifyDataSetChanged();
+            database.addCurrencyPair(currencyPair);
+        }
+    }
+
+    private void saveFavoriteCurrencies(ArrayList<String> favoriteCurrenciesList) {
+        database.updateCurrencyPairs(this.favoriteCurrenciesList);
+    }
+
+    public void removeCurrencyPair(String currencyPair) {
+        favoriteCurrenciesList.remove(currencyPair);
+        saveFavoriteCurrencies(favoriteCurrenciesList);
+        adapter.notifyDataSetChanged();
+        // Mostra una notifica o aggiorna altre parti dell'interfaccia, se necessario
+    }
 
     private void loadFavoriteCurrencies() {
         favoriteCurrenciesList.clear();
