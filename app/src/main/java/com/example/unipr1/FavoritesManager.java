@@ -6,13 +6,11 @@ import android.widget.ArrayAdapter;
 import java.util.ArrayList;
 
 public class FavoritesManager {
-    private Context context;
-    private ArrayList<String> favoriteCurrenciesList;
-    private ArrayAdapter<String> adapter;
-    private Database database;
+    private final ArrayList<String> favoriteCurrenciesList;
+    private final ArrayAdapter<String> adapter;
+    private final Database database;
 
     public FavoritesManager(Context context) {
-        this.context = context;
         favoriteCurrenciesList = new ArrayList<>();
         adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, favoriteCurrenciesList);
         database = new Database(context);
@@ -23,14 +21,6 @@ public class FavoritesManager {
         return adapter;
     }
 
-    public void addCurrencyPair(String currencyPair) {
-        if (!favoriteCurrenciesList.contains(currencyPair)) {
-            favoriteCurrenciesList.add(currencyPair);
-            adapter.notifyDataSetChanged();
-            database.addCurrencyPair(currencyPair);
-        }
-    }
-
     private void saveFavoriteCurrencies(ArrayList<String> favoriteCurrenciesList) {
         database.updateCurrencyPairs(this.favoriteCurrenciesList);
     }
@@ -39,6 +29,7 @@ public class FavoritesManager {
         favoriteCurrenciesList.remove(currencyPair);
         saveFavoriteCurrencies(favoriteCurrenciesList);
         adapter.notifyDataSetChanged();
+        database.deleteCurrencyPair(currencyPair);
         // Mostra una notifica o aggiorna altre parti dell'interfaccia, se necessario
     }
 

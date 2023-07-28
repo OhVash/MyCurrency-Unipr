@@ -7,7 +7,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -36,18 +35,18 @@ public class MainActivity extends AppCompatActivity {
     private TextView textViewResult;
     private TextView textViewCurrencies;
     private TextView textViewHistory;
-    private Button buttonCalculate;
-    private ImageView imageViewSaved;
-    private ImageView imageViewAdd;
     private CurrencyAPIManager currencyAPIManager;
     private ArrayList<String> favoriteCurrenciesList = new ArrayList<>();
     private Database database;
     private static final int REQUEST_CODE_FAVORITES = 1;
+    private String fromCurrency;
+    private String toCurrency;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         spinnerFrom = findViewById(R.id.spinnerFrom);
         spinnerTo = findViewById(R.id.spinnerTo);
@@ -55,9 +54,9 @@ public class MainActivity extends AppCompatActivity {
         textViewResult = findViewById(R.id.textViewResult);
         textViewCurrencies = findViewById(R.id.textViewCurrencies);
         textViewHistory = findViewById(R.id.textViewHistory);
-        buttonCalculate = findViewById(R.id.buttonCalculate);
-        imageViewAdd = findViewById(R.id.imageViewAdd);
-        imageViewSaved = findViewById(R.id.imageViewSaved);
+        Button buttonCalculate = findViewById(R.id.buttonCalculate);
+        ImageView imageViewAdd = findViewById(R.id.imageViewAdd);
+        ImageView imageViewSaved = findViewById(R.id.imageViewSaved);
         currencyAPIManager = new CurrencyAPIManager();
         database = new Database(this);
         favoriteCurrenciesList = database.getAllCurrencyPairs();
@@ -74,8 +73,7 @@ public class MainActivity extends AppCompatActivity {
         spinnerFrom.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String fromCurrency = spinnerFrom.getSelectedItem().toString();
-                String toCurrency = spinnerTo.getSelectedItem().toString();
+                fromCurrency = spinnerFrom.getSelectedItem().toString();
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
@@ -88,8 +86,7 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String fromCurrency = spinnerFrom.getSelectedItem().toString();
-                String toCurrency = spinnerTo.getSelectedItem().toString();
+                toCurrency = spinnerTo.getSelectedItem().toString();
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
@@ -98,9 +95,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         imageViewAdd.setOnClickListener(view -> {
-            String fromCurrency = spinnerFrom.getSelectedItem().toString();
-            String toCurrency = spinnerTo.getSelectedItem().toString();
-
             // Chiamata alla funzione per aggiungere le valute preferite
             addCurrencyToFavorites(fromCurrency, toCurrency);
         });
@@ -139,8 +133,6 @@ public class MainActivity extends AppCompatActivity {
      */
     @SuppressLint("DefaultLocale")
     private void performConversion() {
-        String fromCurrency = spinnerFrom.getSelectedItem().toString();
-        String toCurrency = spinnerTo.getSelectedItem().toString();
 
         String amountStr = editTextAmount.getText().toString();
 
@@ -205,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Questa valuta è già nei preferiti", Toast.LENGTH_SHORT).show();
         }
     }
-    private ActivityResultLauncher<Intent> favoritesLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<Intent> favoritesLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
@@ -218,8 +210,8 @@ public class MainActivity extends AppCompatActivity {
     );
     private void selectCurrencyPairInSpinner(String currencyPair) {
         String[] currencies = currencyPair.split("/");
-        String fromCurrency = currencies[0];
-        String toCurrency = currencies[1];
+         fromCurrency = currencies[0];
+         toCurrency = currencies[1];
 
         int fromCurrencyIndex = getIndexFromSpinner(spinnerFrom, fromCurrency);
         int toCurrencyIndex = getIndexFromSpinner(spinnerTo, toCurrency);
@@ -228,6 +220,7 @@ public class MainActivity extends AppCompatActivity {
             spinnerFrom.setSelection(fromCurrencyIndex);
             spinnerTo.setSelection(toCurrencyIndex);
         }
+        performConversion();
     }
 
     private int getIndexFromSpinner(Spinner spinner, String value) {

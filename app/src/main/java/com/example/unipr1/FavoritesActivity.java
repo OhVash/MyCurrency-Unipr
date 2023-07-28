@@ -1,6 +1,5 @@
 package com.example.unipr1;
 
-
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -8,9 +7,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 
@@ -18,7 +14,6 @@ import java.util.ArrayList;
 
 
 public class FavoritesActivity extends AppCompatActivity {
-    private ImageView imageViewHome;
     private FavoritesManager favoritesManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,10 +26,9 @@ public class FavoritesActivity extends AppCompatActivity {
         listViewFavorites.setAdapter(favoritesManager.getAdapter());
 
         ArrayList<String> favoriteCurrenciesList = database.getAllCurrencyPairs();
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, favoriteCurrenciesList);
 
 
-        imageViewHome = findViewById(R.id.imageViewHome);
+        ImageView imageViewHome = findViewById(R.id.imageViewHome);
         imageViewHome.setOnClickListener(view -> {
             Intent intent = new Intent(FavoritesActivity.this, MainActivity.class );
             startActivity(intent);
@@ -51,13 +45,10 @@ public class FavoritesActivity extends AppCompatActivity {
         });
 
 
-        listViewFavorites.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                // Mostra una conferma di eliminazione (puoi utilizzare un AlertDialog)
-                showDeleteConfirmation(position);
-                return true; // Restituisci true per indicare che l'evento è stato gestito
-            }
+        listViewFavorites.setOnItemLongClickListener((parent, view, position, id) -> {
+            // Mostra una conferma di eliminazione (puoi utilizzare un AlertDialog)
+            showDeleteConfirmation(position);
+            return true; // Restituisci true per indicare che l'evento è stato gestito
         });
 
     }
