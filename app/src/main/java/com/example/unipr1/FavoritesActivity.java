@@ -30,10 +30,8 @@ public class FavoritesActivity extends AppCompatActivity {
 
         ImageView imageViewHome = findViewById(R.id.imageViewHome);
         imageViewHome.setOnClickListener(view -> {
-            Intent intent = new Intent(FavoritesActivity.this, MainActivity.class );
-            startActivity(intent);
+            finish(); // Chiude l'attuale FavoritesActivity e torna alla MainActivity precedente
         });
-
 
         // Aggiungi un listener agli elementi della ListView per selezionare la valuta nello spinner della MainActivity
         listViewFavorites.setOnItemClickListener((parent, view, position, id) -> {
