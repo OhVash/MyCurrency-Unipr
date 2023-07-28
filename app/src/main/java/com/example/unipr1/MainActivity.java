@@ -1,8 +1,11 @@
 package com.example.unipr1;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -17,9 +20,12 @@ import android.widget.Toast;
 import org.json.JSONException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -34,6 +40,9 @@ public class MainActivity extends AppCompatActivity {
     private ImageView imageViewSaved;
     private ImageView imageViewAdd;
     private CurrencyAPIManager currencyAPIManager;
+    private ArrayList<String> favoriteCurrenciesList = new ArrayList<>();
+    private Database database;
+    private static final int REQUEST_CODE_FAVORITES = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
         imageViewAdd = findViewById(R.id.imageViewAdd);
         imageViewSaved = findViewById(R.id.imageViewSaved);
         currencyAPIManager = new CurrencyAPIManager();
+        database = new Database(this);
+        favoriteCurrenciesList = database.getAllCurrencyPairs();
 
         new Thread(() -> {
             List<String> currencies = currencyAPIManager.getCurrencies();
@@ -65,8 +76,6 @@ public class MainActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String fromCurrency = spinnerFrom.getSelectedItem().toString();
                 String toCurrency = spinnerTo.getSelectedItem().toString();
-                String showCurrencies = fromCurrency + "/" + toCurrency;
-                textViewCurrencies.setText(showCurrencies);
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
@@ -81,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String fromCurrency = spinnerFrom.getSelectedItem().toString();
                 String toCurrency = spinnerTo.getSelectedItem().toString();
-                textViewCurrencies.setText(fromCurrency + "/" + toCurrency);
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
@@ -89,10 +97,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        imageViewAdd.setOnClickListener(view -> {
+            String fromCurrency = spinnerFrom.getSelectedItem().toString();
+            String toCurrency = spinnerTo.getSelectedItem().toString();
+
+            // Chiamata alla funzione per aggiungere le valute preferite
+            addCurrencyToFavorites(fromCurrency, toCurrency);
+        });
+
         imageViewSaved.setOnClickListener(view -> {
-            // Log.d("ciao", "hai cliccato");
             Intent intent = new Intent(MainActivity.this, FavoritesActivity.class);
-            startActivity(intent);
+            favoritesLauncher.launch(intent);
         });
     }
     /*
@@ -134,6 +149,10 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Inserisci una quantità valida.", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        String showCurrencies = fromCurrency + "/" + toCurrency + " in the past days: ";
+        textViewCurrencies.setText(showCurrencies);
+
         Executor executor = Executors.newSingleThreadExecutor();
 
         CompletableFuture<Double> exchangeRateFuture = CompletableFuture.supplyAsync(() -> {
@@ -165,5 +184,58 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         });
+    }
+    private void saveFavoriteCurrencies(ArrayList<String> favoriteCurrencies) {
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPreferences", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        Set<String> favoriteCurrenciesSet = new HashSet<>(favoriteCurrencies);
+        editor.putStringSet("favoriteCurrencies", favoriteCurrenciesSet);
+        editor.apply();
+    }
+
+    private void addCurrencyToFavorites(String fromCurrency, String toCurrency) {
+        String currencyPair = fromCurrency + "/" + toCurrency;
+
+        if (!favoriteCurrenciesList.contains(currencyPair)) {
+            favoriteCurrenciesList.add(currencyPair);
+            saveFavoriteCurrencies(favoriteCurrenciesList);
+            database.addCurrencyPair(currencyPair);
+            Toast.makeText(this, "Valuta aggiunta ai preferiti", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Questa valuta è già nei preferiti", Toast.LENGTH_SHORT).show();
+        }
+    }
+    private ActivityResultLauncher<Intent> favoritesLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    String selectedCurrencyPair = result.getData().getStringExtra("selectedCurrencyPair");
+                    if (selectedCurrencyPair != null) {
+                        selectCurrencyPairInSpinner(selectedCurrencyPair);
+                    }
+                }
+            }
+    );
+    private void selectCurrencyPairInSpinner(String currencyPair) {
+        String[] currencies = currencyPair.split("/");
+        String fromCurrency = currencies[0];
+        String toCurrency = currencies[1];
+
+        int fromCurrencyIndex = getIndexFromSpinner(spinnerFrom, fromCurrency);
+        int toCurrencyIndex = getIndexFromSpinner(spinnerTo, toCurrency);
+
+        if (fromCurrencyIndex >= 0 && toCurrencyIndex >= 0) {
+            spinnerFrom.setSelection(fromCurrencyIndex);
+            spinnerTo.setSelection(toCurrencyIndex);
+        }
+    }
+
+    private int getIndexFromSpinner(Spinner spinner, String value) {
+        for (int i = 0; i < spinner.getCount(); i++) {
+            if (spinner.getItemAtPosition(i).toString().equalsIgnoreCase(value)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }
