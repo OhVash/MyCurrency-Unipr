@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -21,10 +20,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -201,16 +198,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    private void saveFavoriteCurrencies(ArrayList<String> favoriteCurrencies) {
-        SharedPreferences sharedPreferences = getSharedPreferences("MyPreferences", MODE_PRIVATE);
-        // editor per poter modificare all'interno delle sharedPreferences
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        // hashset per controllare che non ci siano duplicati
-        Set<String> favoriteCurrenciesSet = new HashSet<>(favoriteCurrencies);
-        // aggiungo il set di valute nelle sharedPreferences
-        editor.putStringSet("favoriteCurrencies", favoriteCurrenciesSet);
-        editor.apply();
-    }
 
     private void addCurrencyToFavorites(String fromCurrency, String toCurrency) {
         // stringa che rappresenta la coppia di valute
@@ -221,7 +208,6 @@ public class MainActivity extends AppCompatActivity {
         */
         if (!favoriteCurrenciesList.contains(currencyPair)) {
             favoriteCurrenciesList.add(currencyPair);
-            saveFavoriteCurrencies(favoriteCurrenciesList);
             database.addCurrencyPair(currencyPair);
             Toast.makeText(this, "Valuta aggiunta ai preferiti", Toast.LENGTH_SHORT).show();
         } else {
