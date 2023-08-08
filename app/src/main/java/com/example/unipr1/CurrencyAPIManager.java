@@ -23,27 +23,31 @@ import java.util.List;
 import java.util.Locale;
 
 public class CurrencyAPIManager {
-    private OkHttpClient client;
-    public CurrencyAPIManager() {
+    private final OkHttpClient client;
+    public CurrencyAPIManager() { // costruttore
         client = new OkHttpClient();
     }
     public List<String> getCurrencies() {
+        // lista in cui salvare le currencies
         List<String> currencies = new ArrayList<>();
+        // costruzione della richiesta con apiKey (freecurrencyapi)
         String apiKey = "34dTPuf6QD2PLFPEsxOmHe9QOzVEEjYCd5FKFdlo";
         String url = "https://api.freecurrencyapi.com/v1/latest?apikey=" + apiKey;
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
+        // creazione richiesta
+        Request request = new Request.Builder().url(url).build();
+
         try {
-            Response response = client.newCall(request).execute();
+            // effettuo la chiamata all'API, se errore, stampa errore nel log.
+            Response response = this.client.newCall(request).execute();
             if (!response.isSuccessful()) {
                 Log.e("FetchCurrenciesTask", "Error! " + response.code());
+                // termino ritornando lista vuota
                 return currencies;
             }
+            // estrazione delle informazioni dal JSON, sono identificate dalla word: data
             JSONObject jsonResponse = new JSONObject(response.body().string());
             JSONObject jsonObjectCurrencies = jsonResponse.getJSONObject("data");
-
+            // itero la lista aggiungedole all'array
             Iterator<String> currencyIterator = jsonObjectCurrencies.keys();
             while (currencyIterator.hasNext()) {
                 String currency = currencyIterator.next();
@@ -61,22 +65,17 @@ public class CurrencyAPIManager {
                 + apiKey + "&currencies="
                 + toCurrency + "&base_currency="
                 + fromCurrency;
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        connection.setRequestMethod("GET");
-        int responseCode = connection.getResponseCode();
 
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
+        Request request = new Request.Builder().url(url).build();
+
+        try (Response response = this.client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Error! " + response.code());
             }
-            reader.close();
-            JSONObject jsonResponse = new JSONObject(response.toString());
-            return jsonResponse.getJSONObject("data").getDouble(toCurrency);
-        } else {
-            throw new IOException("Error! " + responseCode);
+
+            JSONObject jsonResponse = new JSONObject(response.body().string());
+            JSONObject data = jsonResponse.getJSONObject("data");
+            return data.getDouble(toCurrency);
         }
     }
 
@@ -86,12 +85,12 @@ public class CurrencyAPIManager {
         String apiKey = "34dTPuf6QD2PLFPEsxOmHe9QOzVEEjYCd5FKFdlo";
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
-        // Get the current date in UTC timezone
+        // Data da cui partire
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_YEAR, -1);
         String toDate = dateFormat.format(calendar.getTime());
 
-        // Go back 7 days from the current date
+        // Data fino alla quale arrivare con i tassi di cambio
         calendar.add(Calendar.DAY_OF_YEAR, -7);
         String fromDate = dateFormat.format(calendar.getTime());
         String url = "https://api.freecurrencyapi.com/v1/historical?apikey=" + apiKey
@@ -99,15 +98,11 @@ public class CurrencyAPIManager {
                 + "&base_currency=" +fromCurrency
                 + "&date_from=" + fromDate
                 + "&date_to=" + toDate;
-        Log.d(url , url);
+        // Log.d(url , url);
 
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
+        Request request = new Request.Builder().url(url).build();
         try {
-            Response response = client.newCall(request).execute();
+            Response response = this.client.newCall(request).execute();
             if (!response.isSuccessful()) {
                 Log.e("FetchExchangeRateHistory", "Error! " + response.code());
                 return exchangeRates;
@@ -124,7 +119,7 @@ public class CurrencyAPIManager {
                 double exchangeRate = dateObject.getDouble(toCurrency);
                 exchangeRates.add(exchangeRate);
             }
-            Collections.reverse(exchangeRates); // Invert the order to get rates in chronological order
+            Collections.reverse(exchangeRates); // Reverse per metterle in ordine cronologico
         } catch (IOException | JSONException | ParseException e) {
             e.printStackTrace();
         }

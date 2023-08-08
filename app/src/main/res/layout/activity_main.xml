@@ -5,66 +5,58 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    tools:layout_editor_absoluteX="-5dp"
+    tools:layout_editor_absoluteY="-43dp">
 
     <TextView
         android:id="@+id/textViewTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="40dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="sans-serif"
         android:text="MyCurrency"
         android:textColor="#000000"
-        android:textSize="20sp"
+        android:textSize="34sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/textViewAuthor"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:layout_marginTop="8dp"
-        android:text="by OhVash"
-        android:textColor="#000000"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewTitle" />
-
     <ImageView
         android:id="@+id/imageView2"
-        android:layout_width="111dp"
-        android:layout_height="103dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="5dp"
+        android:layout_width="70dp"
+        android:layout_height="55dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/unipr" />
 
     <Spinner
         android:id="@+id/spinnerFrom"
-        android:layout_width="160dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_width="110dp"
+        android:layout_height="43dp"
+        android:layout_marginTop="56dp"
         android:layout_marginEnd="210dp"
         android:backgroundTint="#000000"
         android:foregroundTint="@color/white"
         android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.45"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewTitle" />
 
     <Spinner
         android:id="@+id/spinnerTo"
-        android:layout_width="160dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_width="110dp"
+        android:layout_height="43dp"
+        android:layout_marginStart="210dp"
+        android:layout_marginTop="56dp"
         android:backgroundTint="#000000"
         android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.542"
-        app:layout_constraintStart_toEndOf="@+id/spinnerFrom"
+        app:layout_constraintHorizontal_bias="0.45"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewTitle" />
 
     <EditText
@@ -72,7 +64,7 @@
         android:layout_width="160dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:layout_marginEnd="210dp"
+        android:layout_marginEnd="190dp"
         android:ems="10"
         android:hint="Enter Amount"
         android:inputType="number"
@@ -86,22 +78,22 @@
 
     <TextView
         android:id="@+id/textViewConversion"
-        android:layout_width="160dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_width="96dp"
+        android:layout_height="18dp"
+        android:layout_marginTop="12dp"
         android:text="Conversion:"
         android:textColor="#000000"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.542"
+        app:layout_constraintHorizontal_bias="0.686"
         app:layout_constraintStart_toEndOf="@+id/spinnerFrom"
         app:layout_constraintTop_toBottomOf="@+id/spinnerTo"
         tools:ignore="MissingConstraints" />
 
     <TextView
         android:id="@+id/textViewResult"
-        android:layout_width="160dp"
-        android:layout_height="32dp"
+        android:layout_width="126dp"
+        android:layout_height="26dp"
         android:layout_marginTop="12dp"
         android:textColor="#050000"
         android:textSize="16sp"
@@ -151,8 +143,8 @@
         android:id="@+id/imageViewSaved"
         android:layout_width="42dp"
         android:layout_height="36dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginStart="21dp"
+        android:layout_marginTop="21dp"
         android:backgroundTint="#0B0202"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -167,5 +159,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonCalculate"
         app:srcCompat="@drawable/baseline_bookmark_add_black" />
+
+    <ImageView
+        android:id="@+id/imageViewSwitch"
+        android:layout_width="57dp"
+        android:layout_height="39dp"
+        android:layout_marginTop="56dp"
+        app:layout_constraintEnd_toStartOf="@+id/spinnerTo"
+        app:layout_constraintHorizontal_bias="0.488"
+        app:layout_constraintStart_toEndOf="@+id/spinnerFrom"
+        app:layout_constraintTop_toBottomOf="@+id/textViewTitle"
+        app:srcCompat="@drawable/switch_curr" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -38,46 +38,44 @@ public class MainActivity extends AppCompatActivity {
     private CurrencyAPIManager currencyAPIManager;
     private ArrayList<String> favoriteCurrenciesList = new ArrayList<>();
     private Database database;
-    private static final int REQUEST_CODE_FAVORITES = 1;
     private String fromCurrency;
     private String toCurrency;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main); // layout dell'activity
+        spinnerFrom = findViewById(R.id.spinnerFrom); // spinner da cui scegliere la valuta di partenza
+        spinnerTo = findViewById(R.id.spinnerTo); // spinner da cui scegliere la valuta in cui convertire
+        editTextAmount = findViewById(R.id.editTextAmount); // editText in cui inserire la somma da convertire
+        textViewResult = findViewById(R.id.textViewResult); // textView che mostra il risultato della conversione
+        textViewCurrencies = findViewById(R.id.textViewCurrencies); // mostra le currencies attualmente selezionate
+        textViewHistory = findViewById(R.id.textViewHistory); // mostra il tasso di cambio storico nei 7 giorni precedenti
+        Button buttonCalculate = findViewById(R.id.buttonCalculate); // se premuto effettua la conversione
+        ImageView imageViewAdd = findViewById(R.id.imageViewAdd); // se premuto aggiunge le valute ai preferiti
+        ImageView imageViewSaved = findViewById(R.id.imageViewSaved); // se premuto apre la favorites activity
+        ImageView imageViewSwitch = findViewById(R.id.imageViewSwitch); // se premuto inverte l'attuale selezione delle valute
+        currencyAPIManager = new CurrencyAPIManager(); // oggetto utilizzato per la gestione dell'API e le relative funzioni
+        database = new Database(this); // oggetto utilizzato per gestire le valute salvate
+        favoriteCurrenciesList = database.getAllCurrencyPairs(); // lista aggiornata derivata dal database
 
-
-        spinnerFrom = findViewById(R.id.spinnerFrom);
-        spinnerTo = findViewById(R.id.spinnerTo);
-        editTextAmount = findViewById(R.id.editTextAmount);
-        textViewResult = findViewById(R.id.textViewResult);
-        textViewCurrencies = findViewById(R.id.textViewCurrencies);
-        textViewHistory = findViewById(R.id.textViewHistory);
-        Button buttonCalculate = findViewById(R.id.buttonCalculate);
-        ImageView imageViewAdd = findViewById(R.id.imageViewAdd);
-        ImageView imageViewSaved = findViewById(R.id.imageViewSaved);
-        currencyAPIManager = new CurrencyAPIManager();
-        database = new Database(this);
-        favoriteCurrenciesList = database.getAllCurrencyPairs();
-
-        new Thread(() -> {
+        new Thread(() -> { // thread asincrono per l'acquisizione tramite API delle valute da inserire negli spinner
             List<String> currencies = currencyAPIManager.getCurrencies();
-            runOnUiThread(() -> populateSpinners(currencies));
+            runOnUiThread(() -> populateSpinners(currencies)); // chiama la funzione populateSpinners per l'inserimento
         }).start();
 
         //when pressed perform conversion
-        buttonCalculate.setOnClickListener(v -> performConversion());
+        buttonCalculate.setOnClickListener(v -> performConversion()); // click sul bottone chiama la funzione performConversion
 
         //listener per "spinnerFrom"
         spinnerFrom.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                fromCurrency = spinnerFrom.getSelectedItem().toString();
+                fromCurrency = spinnerFrom.getSelectedItem().toString(); // assegna la valuta selezionata a fromCurrency come stringa
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                //Do nothing if nothing pressed
+                // Non fare nulla
             }
         });
 
@@ -86,39 +84,61 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                toCurrency = spinnerTo.getSelectedItem().toString();
+                toCurrency = spinnerTo.getSelectedItem().toString(); // assegna la valuta selezionata a fromCurrency come stringa
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                //Do nothing if nothing pressed
+                // Non fare nulla
             }
         });
 
-        imageViewAdd.setOnClickListener(view -> {
-            // Chiamata alla funzione per aggiungere le valute preferite
+        imageViewAdd.setOnClickListener(view -> { // Chiamata alla funzione per aggiungere le valute preferite
             addCurrencyToFavorites(fromCurrency, toCurrency);
         });
 
-        imageViewSaved.setOnClickListener(view -> {
+        imageViewSaved.setOnClickListener(view -> { // apre la favoritesActivity tramite intent
             Intent intent = new Intent(MainActivity.this, FavoritesActivity.class);
             favoritesLauncher.launch(intent);
         });
+
+        imageViewSwitch.setOnClickListener(view -> { // se premuto scambia la selezione delle valute
+            swapCurrencies();
+        });
     }
     /*
-     * populate spinner is to put the data from the api into the spinners
+     * populateSpinners serve per riempire gli spinners con le valute fornite dall'API
      */
     private void populateSpinners(List<String> currencies){
+        // collegamento lista - spinner
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,currencies);
+        // impostazione del layout per la vista dello spinner quando selezionato
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // applicazione dell'adapter ai due spinner
         spinnerFrom.setAdapter(adapter);
         spinnerTo.setAdapter(adapter);
     }
 
+    private void swapCurrencies(){
+        // variabili per salvare posizione nello spinner
+        int fromCurrencyPosition = spinnerFrom.getSelectedItemPosition();
+        int toCurrencyPosition = spinnerTo.getSelectedItemPosition();
+        // invertire la selezione tramite le posizioni salvate
+        spinnerFrom.setSelection(toCurrencyPosition);
+        spinnerTo.setSelection(fromCurrencyPosition);
+        // aggiorno le variabili fromCurrency e toCurrency per una corretta visualizzazione
+        fromCurrency = spinnerFrom.getSelectedItem().toString();
+        toCurrency = spinnerTo.getSelectedItem().toString();
+        // aggiorno anche direttamente la conversione
+        performConversion();
+    }
+
     @SuppressLint("DefaultLocale")
     private String buildHistoryText(List<Double> exchangeRates) {
+        // creazione oggetto StringBuilder per la concatenazione di stringhe e formattazione data
         StringBuilder historyText = new StringBuilder();
         SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         Calendar calendar = Calendar.getInstance();
+        // ciclo per assegnare ad ogni data il tasso di cambio corrispondente
         for (int i = 0; i < exchangeRates.size(); i++) {
             calendar.add(Calendar.DAY_OF_YEAR, -1);
             String date = dateFormatter.format(calendar.getTime());
@@ -128,25 +148,28 @@ public class MainActivity extends AppCompatActivity {
         return historyText.toString();
     }
     /*
-     * performConversion uses the chosen amount of money and convert it into the selected currency and
-     * shows it into the editText
+     * performConversion prende il valore inserito nella textEdit e lo converte nella valuta scelta, inoltre mostra i tassi
+     * di cambio dei giorni precedenti
      */
     @SuppressLint("DefaultLocale")
     private void performConversion() {
-
+        // leggo la quantità inserita (la assegno string e double per fare un doppio check)
         String amountStr = editTextAmount.getText().toString();
 
-        //Checkinput
+        //Check del'input, se è vuoto o minore uguale a zero, avviso l'utente di inserire una quantità valida
         if (amountStr.isEmpty()) {
-            Toast.makeText(this, "Inserisci una quantità valida.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Inserisci una quantità valida. Default: 1", Toast.LENGTH_SHORT).show();
+            editTextAmount.setText("1");
             return;
         }
 
+        double amount = Double.parseDouble(amountStr);
+        // costruzione stringa che mostra le valute selezionate (al fine dei tassi storici)
         String showCurrencies = fromCurrency + "/" + toCurrency + " in the past days: ";
         textViewCurrencies.setText(showCurrencies);
-
+        // creo un executor, thread per le prossime istruzioni asincrone
         Executor executor = Executors.newSingleThreadExecutor();
-
+        // operazione asincrona, che chiama la getExchangeRate, al fine di ottenere il tasso di cambio
         CompletableFuture<Double> exchangeRateFuture = CompletableFuture.supplyAsync(() -> {
             try {
                 return currencyAPIManager.getExchangeRate(fromCurrency, toCurrency);
@@ -154,21 +177,22 @@ public class MainActivity extends AppCompatActivity {
                 throw new RuntimeException(e);
             }
         }, executor);
-        
+        // operazione asincrona, come prima ma ottiene il tasso di cambio storico
         CompletableFuture<List<Double>> exchangeRateHistoryFuture = CompletableFuture.supplyAsync(() -> currencyAPIManager.getExchangeRateHistory(fromCurrency, toCurrency), executor);
-
+        // check se le due operazioni precedenti sono state completatate
         CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(exchangeRateFuture, exchangeRateHistoryFuture);
-
+        // dopodiche svolgo le seguenti operazioni: calcolo conversione, costruzione stringhe per la visualizzazione tassi storici.
         combinedFuture.thenRunAsync(() -> {
             try {
+                // salvo tasso corrente in una variabile, e quelli passati in una lista
                 double exchangeRate = exchangeRateFuture.get();
                 List<Double> exchangeRateHistory = exchangeRateHistoryFuture.get();
 
                 runOnUiThread(() -> {
-                    double amount = Double.parseDouble(editTextAmount.getText().toString());
+                    // conversione e stampa del risultato nella textView
                     double convertedAmount = amount * exchangeRate;
                     textViewResult.setText(String.format("%.2f", convertedAmount));
-
+                    // costruzione testo e stampa nella textView
                     String historyText = buildHistoryText(exchangeRateHistory);
                     textViewHistory.setText(historyText);
                 });
@@ -179,15 +203,22 @@ public class MainActivity extends AppCompatActivity {
     }
     private void saveFavoriteCurrencies(ArrayList<String> favoriteCurrencies) {
         SharedPreferences sharedPreferences = getSharedPreferences("MyPreferences", MODE_PRIVATE);
+        // editor per poter modificare all'interno delle sharedPreferences
         SharedPreferences.Editor editor = sharedPreferences.edit();
+        // hashset per controllare che non ci siano duplicati
         Set<String> favoriteCurrenciesSet = new HashSet<>(favoriteCurrencies);
+        // aggiungo il set di valute nelle sharedPreferences
         editor.putStringSet("favoriteCurrencies", favoriteCurrenciesSet);
         editor.apply();
     }
 
     private void addCurrencyToFavorites(String fromCurrency, String toCurrency) {
+        // stringa che rappresenta la coppia di valute
         String currencyPair = fromCurrency + "/" + toCurrency;
-
+        /*
+        * check per vedere se la valuta è già presente o meno, se non c'è aggiungo alla lista e
+        * aggiorno database.
+        */
         if (!favoriteCurrenciesList.contains(currencyPair)) {
             favoriteCurrenciesList.add(currencyPair);
             saveFavoriteCurrencies(favoriteCurrenciesList);
@@ -199,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private final ActivityResultLauncher<Intent> favoritesLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
-            result -> {
+            result -> { // permettere di tornare alla main activity dopo aver cliccato su una coppia di valute nei preferiti
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     String selectedCurrencyPair = result.getData().getStringExtra("selectedCurrencyPair");
                     if (selectedCurrencyPair != null) {
@@ -209,20 +240,23 @@ public class MainActivity extends AppCompatActivity {
             }
     );
     private void selectCurrencyPairInSpinner(String currencyPair) {
+        // assegno la coppia selezionata agli spinner
         String[] currencies = currencyPair.split("/");
-         fromCurrency = currencies[0];
-         toCurrency = currencies[1];
-
+        fromCurrency = currencies[0];
+        toCurrency = currencies[1];
+        // prendo l'indice delle currency
         int fromCurrencyIndex = getIndexFromSpinner(spinnerFrom, fromCurrency);
         int toCurrencyIndex = getIndexFromSpinner(spinnerTo, toCurrency);
-
+        // controllo che sia valido e aggiorno lo spinner
         if (fromCurrencyIndex >= 0 && toCurrencyIndex >= 0) {
             spinnerFrom.setSelection(fromCurrencyIndex);
             spinnerTo.setSelection(toCurrencyIndex);
         }
+        // faccio direttamente la conversione con le valute scelte
         performConversion();
     }
 
+    // funzione utilizzata dal metodo precedente, per prendere l'indice della valuta nello spinner
     private int getIndexFromSpinner(Spinner spinner, String value) {
         for (int i = 0; i < spinner.getCount(); i++) {
             if (spinner.getItemAtPosition(i).toString().equalsIgnoreCase(value)) {

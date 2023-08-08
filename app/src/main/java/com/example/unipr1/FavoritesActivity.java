@@ -27,13 +27,12 @@ public class FavoritesActivity extends AppCompatActivity {
 
         ArrayList<String> favoriteCurrenciesList = database.getAllCurrencyPairs();
 
-
         ImageView imageViewHome = findViewById(R.id.imageViewHome);
         imageViewHome.setOnClickListener(view -> {
             finish(); // Chiude l'attuale FavoritesActivity e torna alla MainActivity precedente
         });
 
-        // Aggiungi un listener agli elementi della ListView per selezionare la valuta nello spinner della MainActivity
+        // listener sugli elementi della ListView per selezionare la coppia di valute
         listViewFavorites.setOnItemClickListener((parent, view, position, id) -> {
             String currencyPair = favoriteCurrenciesList.get(position);
             Intent resultIntent = new Intent();
@@ -42,20 +41,20 @@ public class FavoritesActivity extends AppCompatActivity {
             finish();
         });
 
-
         listViewFavorites.setOnItemLongClickListener((parent, view, position, id) -> {
-            // Mostra una conferma di eliminazione (puoi utilizzare un AlertDialog)
+            // mostra avviso di conferma di eliminazione se tengo premuto
             showDeleteConfirmation(position);
-            return true; // Restituisci true per indicare che l'evento è stato gestito
+            return true;
         });
 
     }
 
     private void showDeleteConfirmation(int position) {
+        // alert per confermare o meno la modifica
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Vuoi eliminare questa valuta dai preferiti?")
                 .setPositiveButton("Elimina", (dialog, which) -> {
-                    // Ottieni l'elemento selezionato dalla lista e rimuovilo dalla lista dei preferiti
+                    // ottengo l'elemento selezionato dalla lista e lo rimuovo
                     String currencyPair = favoritesManager.getAdapter().getItem(position);
                     if (currencyPair != null) {
                         favoritesManager.removeCurrencyPair(currencyPair);

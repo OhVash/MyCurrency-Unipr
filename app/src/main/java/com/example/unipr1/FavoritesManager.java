@@ -14,28 +14,21 @@ public class FavoritesManager {
         favoriteCurrenciesList = new ArrayList<>();
         adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, favoriteCurrenciesList);
         database = new Database(context);
-        loadFavoriteCurrencies();
+        // riempio la lista con il contenuto nel database
+        favoriteCurrenciesList.addAll(database.getAllCurrencyPairs());
     }
 
     public ArrayAdapter<String> getAdapter() {
         return adapter;
     }
 
-    private void saveFavoriteCurrencies(ArrayList<String> favoriteCurrenciesList) {
-        database.updateCurrencyPairs(this.favoriteCurrenciesList);
-    }
-
     public void removeCurrencyPair(String currencyPair) {
+        // elimino da lista, database e aggiorno
         favoriteCurrenciesList.remove(currencyPair);
-        saveFavoriteCurrencies(favoriteCurrenciesList);
-        adapter.notifyDataSetChanged();
         database.deleteCurrencyPair(currencyPair);
-        // Mostra una notifica o aggiorna altre parti dell'interfaccia, se necessario
-    }
+        database.updateCurrencyPairs(favoriteCurrenciesList);
+        adapter.notifyDataSetChanged();
 
-    private void loadFavoriteCurrencies() {
-        favoriteCurrenciesList.clear();
-        favoriteCurrenciesList.addAll(database.getAllCurrencyPairs());
     }
 }
 
