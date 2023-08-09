@@ -18,7 +18,6 @@ import android.widget.Toast;
 import org.json.JSONException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -33,8 +32,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView textViewCurrencies;
     private TextView textViewHistory;
     private CurrencyAPIManager currencyAPIManager;
-    // private ArrayList<String> favoriteCurrenciesList = new ArrayList<>();
-    private Database database;
     private FavoritesManager favoritesManager;
     private String fromCurrency;
     private String toCurrency;
@@ -54,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         ImageView imageViewSaved = findViewById(R.id.imageViewSaved); // se premuto apre la favorites activity
         ImageView imageViewSwitch = findViewById(R.id.imageViewSwitch); // se premuto inverte l'attuale selezione delle valute
         currencyAPIManager = new CurrencyAPIManager(); // oggetto utilizzato per la gestione dell'API e le relative funzioni
-        database = new Database(this); // oggetto utilizzato per gestire le valute salvate
+        // private ArrayList<String> favoriteCurrenciesList = new ArrayList<>();
         favoritesManager = new FavoritesManager(this);
         // favoriteCurrenciesList = database.getAllCurrencyPairs(); // lista aggiornata derivata dal database
 

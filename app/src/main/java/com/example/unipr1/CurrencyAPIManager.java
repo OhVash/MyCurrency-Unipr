@@ -7,12 +7,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,6 +16,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class CurrencyAPIManager {
     private final OkHttpClient client;
@@ -45,6 +41,7 @@ public class CurrencyAPIManager {
                 return currencies;
             }
             // estrazione delle informazioni dal JSON, sono identificate dalla word: data
+            assert response.body() != null;
             JSONObject jsonResponse = new JSONObject(response.body().string());
             JSONObject jsonObjectCurrencies = jsonResponse.getJSONObject("data");
             // itero la lista aggiungedole all'array
@@ -73,6 +70,7 @@ public class CurrencyAPIManager {
                 throw new IOException("Error! " + response.code());
             }
 
+            assert response.body() != null;
             JSONObject jsonResponse = new JSONObject(response.body().string());
             JSONObject data = jsonResponse.getJSONObject("data");
             return data.getDouble(toCurrency);
@@ -107,12 +105,13 @@ public class CurrencyAPIManager {
                 Log.e("FetchExchangeRateHistory", "Error! " + response.code());
                 return exchangeRates;
             }
-
+            // per evitare NullPointerException
+            assert response.body() != null;
             JSONObject jsonResponse = new JSONObject(response.body().string());
             JSONObject dataObject = jsonResponse.getJSONObject("data");
 
             for (int i = 0; i < 7; i++) {
-                calendar.setTime(dateFormat.parse(fromDate));
+                calendar.setTime(Objects.requireNonNull(dateFormat.parse(fromDate)));
                 calendar.add(Calendar.DAY_OF_YEAR, i);
                 String date = dateFormat.format(calendar.getTime());
                 JSONObject dateObject = dataObject.getJSONObject(date);
