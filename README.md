@@ -35,4 +35,10 @@ Questa vista è associata al layout 'activity_favorites' che si trova nella cart
    Questa classe è utilizzata per l'archiviazione permanente delle valute aggiunte ai preferiti, la cui lista è collegata al database.
    Infatti quando viene lanciata l'app, la lista viene inizializzata chiamando il metodo della classe database 'getAllCurrencies()'.
    Qualsiasi aggiornamento dunque, che sia di aggiunta o rimozione dalla lista, va ad aggiornare anche le valute conservate nella     memoria permanente.
+
+4. ### Favorites Manager
+   Contiene i metodi relative all'aggiunta o rimozione delle valute dalla lista dei preferiti.
+5. ### Currency API Manager
+   Contiene tutti i metodi che utilizzano l'API per l'estrazione di dati online, ovvero quelli relativi alla lista di valute, al tasso di cambio giornaliero, e di quello storico negli ultimi sette giorni.
+   L'API utilizzata è quella di https://freecurrencyapi.com
    
