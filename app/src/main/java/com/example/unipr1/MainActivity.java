@@ -33,8 +33,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView textViewCurrencies;
     private TextView textViewHistory;
     private CurrencyAPIManager currencyAPIManager;
-    private ArrayList<String> favoriteCurrenciesList = new ArrayList<>();
+    // private ArrayList<String> favoriteCurrenciesList = new ArrayList<>();
     private Database database;
+    private FavoritesManager favoritesManager;
     private String fromCurrency;
     private String toCurrency;
 
@@ -54,7 +55,8 @@ public class MainActivity extends AppCompatActivity {
         ImageView imageViewSwitch = findViewById(R.id.imageViewSwitch); // se premuto inverte l'attuale selezione delle valute
         currencyAPIManager = new CurrencyAPIManager(); // oggetto utilizzato per la gestione dell'API e le relative funzioni
         database = new Database(this); // oggetto utilizzato per gestire le valute salvate
-        favoriteCurrenciesList = database.getAllCurrencyPairs(); // lista aggiornata derivata dal database
+        favoritesManager = new FavoritesManager(this);
+        // favoriteCurrenciesList = database.getAllCurrencyPairs(); // lista aggiornata derivata dal database
 
         new Thread(() -> { // thread asincrono per l'acquisizione tramite API delle valute da inserire negli spinner
             List<String> currencies = currencyAPIManager.getCurrencies();
@@ -90,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         imageViewAdd.setOnClickListener(view -> { // Chiamata alla funzione per aggiungere le valute preferite
-            addCurrencyToFavorites(fromCurrency, toCurrency);
+            favoritesManager.addCurrencyToFavorites(fromCurrency, toCurrency);
         });
 
         imageViewSaved.setOnClickListener(view -> { // apre la favoritesActivity tramite intent
@@ -199,21 +201,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void addCurrencyToFavorites(String fromCurrency, String toCurrency) {
-        // stringa che rappresenta la coppia di valute
-        String currencyPair = fromCurrency + "/" + toCurrency;
-        /*
-        * check per vedere se la valuta è già presente o meno, se non c'è aggiungo alla lista e
-        * aggiorno database.
-        */
-        if (!favoriteCurrenciesList.contains(currencyPair)) {
-            favoriteCurrenciesList.add(currencyPair);
-            database.addCurrencyPair(currencyPair);
-            Toast.makeText(this, "Valuta aggiunta ai preferiti", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Questa valuta è già nei preferiti", Toast.LENGTH_SHORT).show();
-        }
-    }
     private final ActivityResultLauncher<Intent> favoritesLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> { // permettere di tornare alla main activity dopo aver cliccato su una coppia di valute nei preferiti
