@@ -18,6 +18,7 @@ Questa applicazione e' stata progettata seguendo la consegna per l'esame di Prog
 
 Il programma si divide in 5 classi:
 1. Main Activity: al suo interno, oltre a variabili, oggetti e listener necessari al funzionamento, troviamo le funzioni per popolare gli spinner con le valute, per invertire la selezione delle valute, per fare il calcolo della conversione e visualizzare i tassi di cambio dei giorni passati. Queste informazioni vengono visualizzate su un unica homepage (vedi immagine sottostante) realizzata nel layout 'activity_main' che si trova nella cartella 'res'.
+<img src="https://ibb.co/NZ1hDLc" width="50%" align="center">
 
 
 
