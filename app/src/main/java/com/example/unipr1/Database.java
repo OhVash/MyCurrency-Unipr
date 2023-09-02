@@ -14,7 +14,7 @@ public class Database extends SQLiteOpenHelper {
     private static final String TABLE_NAME = "favorites";
     private static final String COLUMN_CURRENCY_PAIR = "currency_pair";
 
-    public Database(Context context){
+    public Database(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -31,6 +31,7 @@ public class Database extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
     }
+
     public void addCurrencyPair(String currencyPair) {
         // oggetto per la scrittura
         SQLiteDatabase db = this.getWritableDatabase();
@@ -41,6 +42,7 @@ public class Database extends SQLiteOpenHelper {
         db.insert(TABLE_NAME, null, values);
         db.close();
     }
+
     public ArrayList<String> getAllCurrencyPairs() {
         // creazione lista e lettura di tutti i record dal database
         ArrayList<String> currencyPairsList = new ArrayList<>();
@@ -68,17 +70,6 @@ public class Database extends SQLiteOpenHelper {
         db.delete(TABLE_NAME, COLUMN_CURRENCY_PAIR + "=?", new String[]{currencyPair});
         db.close();
     }
-
-    public void updateCurrencyPairs(ArrayList<String> currencyPairsList) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        // Inserisci le nuove valute nella tabella
-        for (String currencyPair : currencyPairsList) {
-            ContentValues values = new ContentValues();
-            values.put(COLUMN_CURRENCY_PAIR, currencyPair);
-            // Utilizza l'istruzione INSERT OR REPLACE per aggiornare o inserire la coppia
-            db.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
-        }
-        db.close();
-    }
 }
+
+

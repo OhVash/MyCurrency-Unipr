@@ -41,7 +41,6 @@ public class FavoritesManager {
         // elimino da lista, database e aggiorno
         favoriteCurrenciesList.remove(currencyPair);
         database.deleteCurrencyPair(currencyPair);
-        database.updateCurrencyPairs(favoriteCurrenciesList);
         adapter.notifyDataSetChanged();
 
     }
