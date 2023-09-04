@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
         currencyAPIManager = new CurrencyAPIManager(); // oggetto utilizzato per la gestione dell'API e le relative funzioni
         // private ArrayList<String> favoriteCurrenciesList = new ArrayList<>();
         favoritesManager = new FavoritesManager(this);
-        // favoriteCurrenciesList = database.getAllCurrencyPairs(); // lista aggiornata derivata dal database
 
         new Thread(() -> { // thread asincrono per l'acquisizione tramite API delle valute da inserire negli spinner
             List<String> currencies = currencyAPIManager.getCurrencies();

@@ -12,11 +12,11 @@ public class FavoritesManager {
     private final Database database;
     private final Context context;
 
-    public FavoritesManager(Context context1) {
+    public FavoritesManager(Context activityContext) {
         favoriteCurrenciesList = new ArrayList<>();
-        adapter = new ArrayAdapter<>(context1, android.R.layout.simple_list_item_1, favoriteCurrenciesList);
-        database = new Database(context1);
-        context = context1;
+        adapter = new ArrayAdapter<>(activityContext, android.R.layout.simple_list_item_1, favoriteCurrenciesList);
+        database = new Database(activityContext);
+        context = activityContext;
         // riempio la lista con il contenuto nel database
         favoriteCurrenciesList.addAll(database.getAllCurrencyPairs());
     }
@@ -29,7 +29,6 @@ public class FavoritesManager {
         String currencyPair = fromCurrency + "/" + toCurrency;
 
         if (!favoriteCurrenciesList.contains(currencyPair)) {
-            favoriteCurrenciesList.add(currencyPair);
             database.addCurrencyPair(currencyPair);
             adapter.notifyDataSetChanged(); // Aggiorna l'adapter
             Toast.makeText(context, "Valuta aggiunta ai preferiti", Toast.LENGTH_SHORT).show();
@@ -42,7 +41,6 @@ public class FavoritesManager {
         favoriteCurrenciesList.remove(currencyPair);
         database.deleteCurrencyPair(currencyPair);
         adapter.notifyDataSetChanged();
-
     }
 }
 
