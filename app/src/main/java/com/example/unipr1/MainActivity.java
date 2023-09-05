@@ -155,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
         if (amountStr.isEmpty()) {
             Toast.makeText(this, "Inserisci una quantità valida. Default: 1", Toast.LENGTH_SHORT).show();
             editTextAmount.setText("1");
+            performConversion();
             return;
         }
 

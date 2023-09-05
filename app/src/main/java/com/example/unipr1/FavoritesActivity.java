@@ -3,27 +3,37 @@ package com.example.unipr1;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.content.Intent;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
-
 public class FavoritesActivity extends AppCompatActivity {
     private FavoritesManager favoritesManager;
+    private RecyclerView recyclerViewFavorites; // Aggiunto
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorites);
 
-        ListView listViewFavorites = findViewById(R.id.listViewFavorites);
+        recyclerViewFavorites = findViewById(R.id.recyclerViewFavorites); // Inizializzato
+
         Database database = new Database(this);
         favoritesManager = new FavoritesManager(this);
-        listViewFavorites.setAdapter(favoritesManager.getAdapter());
+
+        // Imposta il layout manager per la RecyclerView (es. LinearLayoutManager)
+        recyclerViewFavorites.setLayoutManager(new LinearLayoutManager(this));
+
+        // Imposta l'adapter personalizzato sulla RecyclerView
+        recyclerViewFavorites.setAdapter(favoritesManager.getAdapter());
 
         ArrayList<String> favoriteCurrenciesList = database.getAllCurrencyPairs();
 
@@ -32,21 +42,26 @@ public class FavoritesActivity extends AppCompatActivity {
             finish(); // Chiude l'attuale FavoritesActivity e torna alla MainActivity precedente
         });
 
-        // listener sugli elementi della ListView per selezionare la coppia di valute
-        listViewFavorites.setOnItemClickListener((parent, view, position, id) -> {
-            String currencyPair = favoriteCurrenciesList.get(position);
-            Intent resultIntent = new Intent();
-            resultIntent.putExtra("selectedCurrencyPair", currencyPair);
-            setResult(RESULT_OK, resultIntent);
-            finish();
-        });
+        // Aggiorna il codice relativo al click sugli elementi della RecyclerView
+        recyclerViewFavorites.addOnItemTouchListener(
+                new RecyclerItemClickListener(this, recyclerViewFavorites,
+                        new RecyclerItemClickListener.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(View view, int position) {
+                                String currencyPair = favoriteCurrenciesList.get(position);
+                                Intent resultIntent = new Intent();
+                                resultIntent.putExtra("selectedCurrencyPair", currencyPair);
+                                setResult(RESULT_OK, resultIntent);
+                                finish();
+                            }
 
-        listViewFavorites.setOnItemLongClickListener((parent, view, position, id) -> {
-            // mostra avviso di conferma di eliminazione se tengo premuto
-            showDeleteConfirmation(position);
-            return true;
-        });
-
+                            @Override
+                            public void onItemLongClick(View view, int position) {
+                                // mostra avviso di conferma di eliminazione se tengo premuto
+                                showDeleteConfirmation(position);
+                            }
+                        })
+        );
     }
 
     private void showDeleteConfirmation(int position) {
@@ -58,9 +73,11 @@ public class FavoritesActivity extends AppCompatActivity {
                     String currencyPair = favoritesManager.getAdapter().getItem(position);
                     if (currencyPair != null) {
                         favoritesManager.removeCurrencyPair(currencyPair);
+                        recyclerViewFavorites.getAdapter().notifyItemRemoved(position); // Aggiornamento della RecyclerView
                     }
                 })
                 .setNegativeButton("Annulla", (dialog, which) -> dialog.dismiss())
                 .show();
     }
 }
+
