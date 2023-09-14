@@ -17,14 +17,14 @@ import java.util.ArrayList;
 
 public class FavoritesActivity extends AppCompatActivity {
     private FavoritesManager favoritesManager;
-    private RecyclerView recyclerViewFavorites; // Aggiunto
+    private RecyclerView recyclerViewFavorites;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorites);
 
-        recyclerViewFavorites = findViewById(R.id.recyclerViewFavorites); // Inizializzato
+        recyclerViewFavorites = findViewById(R.id.recyclerViewFavorites);
 
         Database database = new Database(this);
         favoritesManager = new FavoritesManager(this);

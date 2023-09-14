@@ -30,7 +30,7 @@ public class CurrencyAdapter extends RecyclerView.Adapter<CurrencyAdapter.ViewHo
         String currencyPair = favoriteCurrenciesList.get(position);
         holder.currencyPairTextView.setText(currencyPair);
     }
-    // Aggiungi questo metodo per ottenere l'elemento in una posizione specifica
+
     public String getItem(int position) {
         return favoriteCurrenciesList.get(position);
     }

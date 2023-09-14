@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class FavoritesManager {
     private final ArrayList<String> favoriteCurrenciesList;
-    private final CurrencyAdapter adapter; // Cambia il tipo a CurrencyAdapter
+    private final CurrencyAdapter adapter;
     private final Database database;
     private final Context context;
 
